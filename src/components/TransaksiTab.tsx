@@ -37,23 +37,31 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
       {/* Mobile view */}
       <div className="grid grid-cols-1 gap-3 sm:hidden">
         {paginatedData.map((r) => (
-          <div key={r.id} className="flex flex-col gap-3 rounded-lg border bg-background p-4 shadow-sm">
+          <div
+            key={r.id}
+            className="flex flex-col gap-3 rounded-lg border bg-background p-4 shadow-sm"
+          >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-medium text-sm mb-1">{r.tipe === "pemasukan" ? (r.sumber ?? "-") : (r.seksi ?? "-")}</p>
+                <p className="font-medium text-sm mb-1">
+                  {r.tipe === "pemasukan" ? (r.sumber ?? "-") : (r.seksi ?? "-")}
+                </p>
                 <p className="text-xs text-muted-foreground">{formatTanggal(r.tanggal)}</p>
               </div>
-              <Badge variant={r.tipe === "pemasukan" ? "default" : "secondary"} className="shrink-0">
+              <Badge
+                variant={r.tipe === "pemasukan" ? "default" : "secondary"}
+                className="shrink-0"
+              >
                 {r.tipe}
               </Badge>
             </div>
-            
-            {(r.keterangan) && (
+
+            {r.keterangan && (
               <p className="text-sm text-muted-foreground bg-muted/30 p-2 rounded-md">
                 {r.keterangan}
               </p>
             )}
-            
+
             <div className="flex justify-between items-center pt-2 border-t mt-1">
               <span className="text-xs font-medium text-muted-foreground">Nominal</span>
               <span className="font-bold text-primary">{formatRupiah(r.nominal)}</span>
@@ -74,9 +82,15 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
             <TableRow className="bg-primary hover:bg-primary">
               <TableHead className="text-primary-foreground whitespace-nowrap">Tanggal</TableHead>
               <TableHead className="text-primary-foreground whitespace-nowrap">Tipe</TableHead>
-              <TableHead className="text-primary-foreground whitespace-nowrap">Sumber / Seksi</TableHead>
-              <TableHead className="text-primary-foreground whitespace-nowrap">Keterangan</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">Nominal</TableHead>
+              <TableHead className="text-primary-foreground whitespace-nowrap">
+                Sumber / Seksi
+              </TableHead>
+              <TableHead className="text-primary-foreground whitespace-nowrap">
+                Keterangan
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Nominal
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,13 +98,22 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
               <TableRow key={r.id}>
                 <TableCell className="whitespace-nowrap">{formatTanggal(r.tanggal)}</TableCell>
                 <TableCell>
-                  <Badge variant={r.tipe === "pemasukan" ? "default" : "secondary"} className="whitespace-nowrap">{r.tipe}</Badge>
+                  <Badge
+                    variant={r.tipe === "pemasukan" ? "default" : "secondary"}
+                    className="whitespace-nowrap"
+                  >
+                    {r.tipe}
+                  </Badge>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {r.tipe === "pemasukan" ? (r.sumber ?? "-") : (r.seksi ?? "-")}
                 </TableCell>
-                <TableCell className="text-muted-foreground min-w-[200px]">{r.keterangan ?? "-"}</TableCell>
-                <TableCell className="text-right tabular-nums whitespace-nowrap">{formatRupiah(r.nominal)}</TableCell>
+                <TableCell className="text-muted-foreground min-w-[200px]">
+                  {r.keterangan ?? "-"}
+                </TableCell>
+                <TableCell className="text-right tabular-nums whitespace-nowrap">
+                  {formatRupiah(r.nominal)}
+                </TableCell>
               </TableRow>
             ))}
             {paginatedData.length === 0 && (
@@ -109,7 +132,7 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Sebelumnya
           </button>
@@ -119,7 +142,7 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
             Selanjutnya
           </button>

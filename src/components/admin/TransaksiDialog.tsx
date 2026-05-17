@@ -114,7 +114,9 @@ export function TransaksiDialog({
         keterangan: keterangan || null,
         sumber_donasi_id: tipe === "pemasukan" ? sumberId || null : null,
         seksi_id: tipe === "pengeluaran" ? seksiId || null : null,
-        donor_nama: donorNama ? `${donorNama.replace(/ \[(Pria|Wanita)\]/g, "").trim()} [${donorGender}]` : null,
+        donor_nama: donorNama
+          ? `${donorNama.replace(/ \[(Pria|Wanita)\]/g, "").trim()} [${donorGender}]`
+          : null,
         kode: kode || null,
         status,
         bukti_bayar_url: buktiUrl,
@@ -185,11 +187,29 @@ export function TransaksiDialog({
                 <Label>Jenis Kelamin Donatur</Label>
                 <div className="flex gap-4 items-center mt-1">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={donorGender === "Pria"} onChange={() => { setDonorGender("Pria"); setNominal(250000); }} name="adm_gender" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      checked={donorGender === "Pria"}
+                      onChange={() => {
+                        setDonorGender("Pria");
+                        setNominal(250000);
+                      }}
+                      name="adm_gender"
+                      className="h-4 w-4"
+                    />
                     Pria
                   </label>
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={donorGender === "Wanita"} onChange={() => { setDonorGender("Wanita"); setNominal(100000); }} name="adm_gender" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      checked={donorGender === "Wanita"}
+                      onChange={() => {
+                        setDonorGender("Wanita");
+                        setNominal(100000);
+                      }}
+                      name="adm_gender"
+                      className="h-4 w-4"
+                    />
                     Wanita
                   </label>
                 </div>

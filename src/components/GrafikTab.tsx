@@ -47,10 +47,21 @@ export function GrafikTab({ seksi, sumber }: { seksi: SeksiRow[]; sumber: Sumber
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={seksiData} margin={{ top: 10, right: 10, left: -20, bottom: 80 }}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={90} fontSize={10} interval={0} />
-              <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`} width={60} />
+              <XAxis
+                dataKey="name"
+                angle={-45}
+                textAnchor="end"
+                height={90}
+                fontSize={10}
+                interval={0}
+              />
+              <YAxis
+                fontSize={10}
+                tickFormatter={(v) => `${(v / 1000000).toFixed(0)}jt`}
+                width={60}
+              />
               <Tooltip formatter={(v: number) => formatRupiah(v)} wrapperClassName="text-sm" />
-              <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '20px' }} />
+              <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: "20px" }} />
               <Bar dataKey="Rencana" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Realisasi" fill="var(--color-primary-glow)" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -81,7 +92,15 @@ export function GrafikTab({ seksi, sumber }: { seksi: SeksiRow[]; sumber: Sumber
                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
                     // Only show label if screen is wide enough or try to fit
                     return (
-                      <text x={x} y={y} fill="#666" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={10} className="hidden sm:block">
+                      <text
+                        x={x}
+                        y={y}
+                        fill="#666"
+                        textAnchor={x > cx ? "start" : "end"}
+                        dominantBaseline="central"
+                        fontSize={10}
+                        className="hidden sm:block"
+                      >
                         {sumberData[index].name}
                       </text>
                     );

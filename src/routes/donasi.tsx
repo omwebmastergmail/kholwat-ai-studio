@@ -47,7 +47,9 @@ function DonasiFormPage() {
   const [donorGender, setDonorGender] = useState<"Pria" | "Wanita">("Pria");
   const [sumberId, setSumberId] = useState("");
   const [nominal, setNominal] = useState<number>(250000);
-  const [kolektif, setKolektif] = useState<{ nama: string; gender: "Pria" | "Wanita"; nominal: number }[]>([]);
+  const [kolektif, setKolektif] = useState<
+    { nama: string; gender: "Pria" | "Wanita"; nominal: number }[]
+  >([]);
   const [keterangan, setKeterangan] = useState("");
   const kolektifSum = kolektif.reduce((s, r) => s + (Number(r.nominal) || 0), 0);
   const isKolektif = kolektif.length > 0;
@@ -112,7 +114,9 @@ function DonasiFormPage() {
 
       const kolektifText = isKolektif
         ? "Pembayar Kolektif:\n" +
-          kolektif.map((r) => `- ${r.nama.trim()} [${r.gender}] : ${formatRupiah(r.nominal)}`).join("\n")
+          kolektif
+            .map((r) => `- ${r.nama.trim()} [${r.gender}] : ${formatRupiah(r.nominal)}`)
+            .join("\n")
         : "";
       const kode = "DN-" + Date.now().toString(36).toUpperCase();
       const finalDonorName = isKolektif ? donorNama : `${parsed.data.donor_nama} [${donorGender}]`;
@@ -258,11 +262,29 @@ function DonasiFormPage() {
                 <Label>Jenis Kelamin *</Label>
                 <div className="flex gap-4 items-center mt-1">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={donorGender === "Pria"} onChange={() => { setDonorGender("Pria"); setNominal(250000); }} name="gender" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      checked={donorGender === "Pria"}
+                      onChange={() => {
+                        setDonorGender("Pria");
+                        setNominal(250000);
+                      }}
+                      name="gender"
+                      className="h-4 w-4"
+                    />
                     Pria
                   </label>
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={donorGender === "Wanita"} onChange={() => { setDonorGender("Wanita"); setNominal(100000); }} name="gender" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      checked={donorGender === "Wanita"}
+                      onChange={() => {
+                        setDonorGender("Wanita");
+                        setNominal(100000);
+                      }}
+                      name="gender"
+                      className="h-4 w-4"
+                    />
                     Wanita
                   </label>
                 </div>
@@ -277,7 +299,9 @@ function DonasiFormPage() {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => setKolektif((p) => [...p, { nama: "", gender: "Pria", nominal: 250000 }])}
+                onClick={() =>
+                  setKolektif((p) => [...p, { nama: "", gender: "Pria", nominal: 250000 }])
+                }
               >
                 <Plus className="h-4 w-4" /> Tambah
               </Button>
@@ -292,7 +316,10 @@ function DonasiFormPage() {
                 </div>
                 <div className="flex flex-col">
                   {kolektif.map((row, idx) => (
-                    <div key={idx} className="relative grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 sm:py-2 flex-col sm:flex-row border-b sm:items-start group hover:bg-muted/30 transition-colors pt-8 sm:pt-3">
+                    <div
+                      key={idx}
+                      className="relative grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 sm:py-2 flex-col sm:flex-row border-b sm:items-start group hover:bg-muted/30 transition-colors pt-8 sm:pt-3"
+                    >
                       <div className="absolute left-3 top-3 sm:hidden text-xs font-semibold text-muted-foreground">
                         Pembayar {idx + 1}
                       </div>
@@ -313,11 +340,35 @@ function DonasiFormPage() {
                         <Label className="text-xs sm:hidden mb-1.5 block">Jenis Kelamin</Label>
                         <div className="flex gap-4 sm:flex-col sm:gap-1.5 border border-input rounded-md px-3 sm:px-2 py-2 sm:py-1.5 items-center sm:items-start h-9 sm:h-auto overflow-hidden bg-background">
                           <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                            <input type="radio" checked={row.gender === "Pria"} onChange={() => setKolektif((p) => p.map((r, i) => (i === idx ? { ...r, gender: "Pria", nominal: 250000 } : r)))} name={`g_${idx}`} className="h-3.5 w-3.5" />
+                            <input
+                              type="radio"
+                              checked={row.gender === "Pria"}
+                              onChange={() =>
+                                setKolektif((p) =>
+                                  p.map((r, i) =>
+                                    i === idx ? { ...r, gender: "Pria", nominal: 250000 } : r,
+                                  ),
+                                )
+                              }
+                              name={`g_${idx}`}
+                              className="h-3.5 w-3.5"
+                            />
                             Pria
                           </label>
                           <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-                            <input type="radio" checked={row.gender === "Wanita"} onChange={() => setKolektif((p) => p.map((r, i) => (i === idx ? { ...r, gender: "Wanita", nominal: 100000 } : r)))} name={`g_${idx}`} className="h-3.5 w-3.5" />
+                            <input
+                              type="radio"
+                              checked={row.gender === "Wanita"}
+                              onChange={() =>
+                                setKolektif((p) =>
+                                  p.map((r, i) =>
+                                    i === idx ? { ...r, gender: "Wanita", nominal: 100000 } : r,
+                                  ),
+                                )
+                              }
+                              name={`g_${idx}`}
+                              className="h-3.5 w-3.5"
+                            />
                             Wanita
                           </label>
                         </div>
@@ -349,8 +400,12 @@ function DonasiFormPage() {
                     </div>
                   ))}
                   <div className="bg-muted/30 p-4 sm:p-3 flex justify-between items-center">
-                    <span className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Total Kolektif</span>
-                    <span className="font-bold text-lg text-primary tabular-nums">{formatRupiah(kolektifSum)}</span>
+                    <span className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">
+                      Total Kolektif
+                    </span>
+                    <span className="font-bold text-lg text-primary tabular-nums">
+                      {formatRupiah(kolektifSum)}
+                    </span>
                   </div>
                 </div>
               </div>

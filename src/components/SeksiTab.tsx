@@ -54,12 +54,14 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground text-xs mb-0.5">Realisasi</p>
-                  <p className="font-medium tabular-nums text-primary">{formatRupiah(r.realisasi)}</p>
+                  <p className="font-medium tabular-nums text-primary">
+                    {formatRupiah(r.realisasi)}
+                  </p>
                 </div>
                 <div className="col-span-2 mt-1">
                   <div className="flex justify-between items-center rounded-md bg-muted/50 px-3 py-2">
-                     <span className="text-xs text-muted-foreground">Sisa</span>
-                     <span className="font-semibold tabular-nums">{formatRupiah(sisa)}</span>
+                    <span className="text-xs text-muted-foreground">Sisa</span>
+                    <span className="font-semibold tabular-nums">{formatRupiah(sisa)}</span>
                   </div>
                 </div>
               </div>
@@ -80,9 +82,15 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
             <TableRow className="bg-primary hover:bg-primary">
               <TableHead className="w-14 text-primary-foreground whitespace-nowrap">No</TableHead>
               <TableHead className="text-primary-foreground whitespace-nowrap">Seksi</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">Rencana</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">Realisasi</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">Sisa</TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Rencana
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Realisasi
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Sisa
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -91,7 +99,9 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
               const pct = r.rencana > 0 ? Math.min(100, (r.realisasi / r.rencana) * 100) : 0;
               return (
                 <TableRow key={r.id}>
-                  <TableCell className="text-muted-foreground whitespace-nowrap">{(page - 1) * pageSize + i + 1}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">
+                    {(page - 1) * pageSize + i + 1}
+                  </TableCell>
                   <TableCell>
                     <div className="font-medium whitespace-nowrap">{r.nama}</div>
                     <Progress value={pct} className="mt-2 h-1.5" />
@@ -102,7 +112,9 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
                   <TableCell className="text-right tabular-nums whitespace-nowrap">
                     {formatRupiah(r.realisasi)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums whitespace-nowrap">{formatRupiah(sisa)}</TableCell>
+                  <TableCell className="text-right tabular-nums whitespace-nowrap">
+                    {formatRupiah(sisa)}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -122,7 +134,7 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Sebelumnya
           </button>
@@ -132,7 +144,7 @@ export function SeksiTab({ data }: { data: SeksiRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
             Selanjutnya
           </button>

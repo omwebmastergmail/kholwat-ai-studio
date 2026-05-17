@@ -71,7 +71,7 @@ function Dashboard() {
       (t) => t.sumber_donasi_id === s.id && t.tipe === "pemasukan" && t.status === "diterima",
     );
     const nominal = sTrx.reduce((sum, t) => sum + Number(t.nominal), 0);
-    const textData = sTrx.map(t => (t.donor_nama || "") + " " + (t.keterangan || "")).join(" ");
+    const textData = sTrx.map((t) => (t.donor_nama || "") + " " + (t.keterangan || "")).join(" ");
     const pria = (textData.match(/\[Pria\]/g) || []).length;
     const wanita = (textData.match(/\[Wanita\]/g) || []).length;
     return {
@@ -120,7 +120,12 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="laporan" className="mt-6 space-y-6">
-            <StatsCards target={target} realisasi={realisasi} pria={totalPria} wanita={totalWanita} />
+            <StatsCards
+              target={target}
+              realisasi={realisasi}
+              pria={totalPria}
+              wanita={totalWanita}
+            />
 
             <Tabs defaultValue="donasi" className="w-full">
               <TabsList className="flex h-auto w-full flex-wrap gap-2 md:grid md:grid-cols-4">

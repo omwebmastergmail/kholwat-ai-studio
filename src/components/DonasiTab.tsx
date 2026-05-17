@@ -25,7 +25,7 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
   const [sortDesc, setSortDesc] = useState<boolean | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 5;
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   const filtered = useMemo(() => {
     let rows = data.filter((r) => r.nama.toLowerCase().includes(q.toLowerCase()));
@@ -75,7 +75,10 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
       {/* Mobile view */}
       <div className="grid grid-cols-1 gap-3 sm:hidden">
         {paginatedMobile.map((r, i) => (
-          <div key={r.id} className="flex flex-col gap-3 rounded-lg border bg-background p-4 shadow-sm">
+          <div
+            key={r.id}
+            className="flex flex-col gap-3 rounded-lg border bg-background p-4 shadow-sm"
+          >
             <div className="flex items-center gap-3 border-b pb-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
                 {(page - 1) * pageSize + i + 1}
@@ -111,7 +114,9 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
             <TableRow className="bg-primary hover:bg-primary">
               <TableHead className="w-14 text-primary-foreground whitespace-nowrap">No</TableHead>
               <TableHead className="text-primary-foreground whitespace-nowrap">Cabang</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">Peserta</TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Peserta
+              </TableHead>
               <TableHead className="text-right text-primary-foreground whitespace-nowrap">
                 <button
                   className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
@@ -125,13 +130,19 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
           <TableBody>
             {paginatedMobile.map((r, i) => (
               <TableRow key={r.id}>
-                <TableCell className="text-muted-foreground whitespace-nowrap">{(page - 1) * pageSize + i + 1}</TableCell>
+                <TableCell className="text-muted-foreground whitespace-nowrap">
+                  {(page - 1) * pageSize + i + 1}
+                </TableCell>
                 <TableCell className="font-medium">{r.nama}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   {r.pria + r.wanita}
-                  <span className="text-xs text-muted-foreground ml-1.5 block sm:inline">(P: {r.pria}, W: {r.wanita})</span>
+                  <span className="text-xs text-muted-foreground ml-1.5 block sm:inline">
+                    (P: {r.pria}, W: {r.wanita})
+                  </span>
                 </TableCell>
-                <TableCell className="text-right tabular-nums whitespace-nowrap">{formatRupiah(r.nominal)}</TableCell>
+                <TableCell className="text-right tabular-nums whitespace-nowrap">
+                  {formatRupiah(r.nominal)}
+                </TableCell>
               </TableRow>
             ))}
             {paginatedMobile.length === 0 && (
@@ -150,7 +161,7 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Sebelumnya
           </button>
@@ -160,7 +171,7 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
           <button
             className="rounded-md border bg-background px-3 py-1 hover:bg-muted disabled:opacity-50"
             disabled={page === totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
             Selanjutnya
           </button>
