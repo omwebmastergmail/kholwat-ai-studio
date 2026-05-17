@@ -54,26 +54,6 @@ function Dashboard() {
 
   type TrxItem = (typeof trx)[0];
 
-  const sumberRows: SumberRow[] = sumber.map((s) => ({
-    id: s.id,
-    nama: s.nama,
-    urutan: s.urutan,
-    nominal: trx
-      .filter(
-        (t) => t.sumber_donasi_id === s.id && t.tipe === "pemasukan" && t.status === "diterima",
-      )
-      .reduce((sum, t) => sum + Number(t.nominal), 0),
-  }));
-
-  const seksiRows: SeksiRow[] = seksi.map((s) => ({
-    id: s.id,
-    nama: s.nama,
-    rencana: Number(s.rencana_anggaran),
-    realisasi: trx
-      .filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran")
-      .reduce((sum, t) => sum + Number(t.nominal), 0),
-  }));
-
   const trxRows: TrxRow[] = trx
     .filter((t) => t.status === "diterima")
     .map((t) => ({
@@ -86,10 +66,40 @@ function Dashboard() {
       seksi: (t.seksi as { nama: string } | null)?.nama ?? null,
     }));
 
+  const sumberRows: SumberRow[] = sumber.map((s) => {
+    const sTrx = trx.filter(
+      (t) => t.sumber_donasi_id === s.id && t.tipe === "pemasukan" && t.status === "diterima",
+    );
+    const nominal = sTrx.reduce((sum, t) => sum + Number(t.nominal), 0);
+    const textData = sTrx.map(t => (t.donor_nama || "") + " " + (t.keterangan || "")).join(" ");
+    const pria = (textData.match(/\[Pria\]/g) || []).length;
+    const wanita = (textData.match(/\[Wanita\]/g) || []).length;
+    return {
+      id: s.id,
+      nama: s.nama,
+      urutan: s.urutan,
+      nominal,
+      pria,
+      wanita,
+    };
+  });
+
+  const seksiRows: SeksiRow[] = seksi.map((s) => ({
+    id: s.id,
+    nama: s.nama,
+    rencana: Number(s.rencana_anggaran),
+    realisasi: trx
+      .filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran")
+      .reduce((sum, t) => sum + Number(t.nominal), 0),
+  }));
+
   const target = seksiRows.reduce((s, r) => s + r.rencana, 0);
   const realisasi = trxRows
     .filter((t) => t.tipe === "pemasukan")
     .reduce((s, t) => s + t.nominal, 0);
+
+  const totalPria = sumberRows.reduce((s, r) => s + r.pria, 0);
+  const totalWanita = sumberRows.reduce((s, r) => s + r.wanita, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,23 +120,23 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="laporan" className="mt-6 space-y-6">
-            <StatsCards target={target} realisasi={realisasi} />
+            <StatsCards target={target} realisasi={realisasi} pria={totalPria} wanita={totalWanita} />
 
             <Tabs defaultValue="donasi" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="donasi">
+              <TabsList className="flex h-auto w-full flex-wrap gap-2 md:grid md:grid-cols-4">
+                <TabsTrigger value="donasi" className="flex-1">
                   <List className="mr-1 h-4 w-4" />
                   Donasi
                 </TabsTrigger>
-                <TabsTrigger value="seksi">
+                <TabsTrigger value="seksi" className="flex-1">
                   <Users className="mr-1 h-4 w-4" />
                   Seksi
                 </TabsTrigger>
-                <TabsTrigger value="transaksi">
+                <TabsTrigger value="transaksi" className="flex-1">
                   <ArrowLeftRight className="mr-1 h-4 w-4" />
                   Transaksi
                 </TabsTrigger>
-                <TabsTrigger value="grafik">
+                <TabsTrigger value="grafik" className="flex-1">
                   <PieIcon className="mr-1 h-4 w-4" />
                   Grafik
                 </TabsTrigger>

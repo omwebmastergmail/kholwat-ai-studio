@@ -48,6 +48,7 @@ export function TransaksiDialog({
   const [nominal, setNominal] = useState(0);
   const [keterangan, setKeterangan] = useState("");
   const [donorNama, setDonorNama] = useState("");
+  const [donorGender, setDonorGender] = useState<"Pria" | "Wanita">("Pria");
   const [kode, setKode] = useState("");
   const [status, setStatus] = useState<TrxStatus>("diterima");
   const [file, setFile] = useState<File | null>(null);
@@ -63,7 +64,15 @@ export function TransaksiDialog({
       setSeksiId(initial.seksi_id ?? "");
       setNominal(Number(initial.nominal));
       setKeterangan(initial.keterangan ?? "");
-      setDonorNama(initial.donor_nama ?? "");
+      let dn = initial.donor_nama ?? "";
+      if (dn.includes("[Pria]")) {
+        setDonorGender("Pria");
+        dn = dn.replace("[Pria]", "").trim();
+      } else if (dn.includes("[Wanita]")) {
+        setDonorGender("Wanita");
+        dn = dn.replace("[Wanita]", "").trim();
+      }
+      setDonorNama(dn);
       setKode(initial.kode ?? "");
       setStatus(initial.status);
       setExistingUrl(initial.bukti_bayar_url);
@@ -75,6 +84,7 @@ export function TransaksiDialog({
       setNominal(0);
       setKeterangan("");
       setDonorNama("");
+      setDonorGender("Pria");
       setKode("");
       setStatus("diterima");
       setExistingUrl(null);
@@ -104,7 +114,7 @@ export function TransaksiDialog({
         keterangan: keterangan || null,
         sumber_donasi_id: tipe === "pemasukan" ? sumberId || null : null,
         seksi_id: tipe === "pengeluaran" ? seksiId || null : null,
-        donor_nama: donorNama || null,
+        donor_nama: donorNama ? `${donorNama.replace(/ \[(Pria|Wanita)\]/g, "").trim()} [${donorGender}]` : null,
         kode: kode || null,
         status,
         bukti_bayar_url: buktiUrl,
@@ -149,10 +159,10 @@ export function TransaksiDialog({
           {tipe === "pemasukan" ? (
             <>
               <div className="col-span-2">
-                <Label>Sumber Donasi</Label>
+                <Label>Cabang Asal</Label>
                 <Select value={sumberId} onValueChange={setSumberId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih sumber" />
+                    <SelectValue placeholder="Pilih cabang" />
                   </SelectTrigger>
                   <SelectContent>
                     {sumber.map((s) => (
@@ -163,15 +173,28 @@ export function TransaksiDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Nama Donatur</Label>
+              <div className="col-span-2">
+                <Label>Nama Donatur / Jamaah</Label>
                 <Input
                   value={donorNama}
                   onChange={(e) => setDonorNama(e.target.value)}
-                  placeholder="Jamaah / nama"
+                  placeholder="Nama jamaah"
                 />
               </div>
-              <div>
+              <div className="col-span-2">
+                <Label>Jenis Kelamin Donatur</Label>
+                <div className="flex gap-4 items-center mt-1">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" checked={donorGender === "Pria"} onChange={() => { setDonorGender("Pria"); setNominal(250000); }} name="adm_gender" className="h-4 w-4" />
+                    Pria
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" checked={donorGender === "Wanita"} onChange={() => { setDonorGender("Wanita"); setNominal(100000); }} name="adm_gender" className="h-4 w-4" />
+                    Wanita
+                  </label>
+                </div>
+              </div>
+              <div className="col-span-2">
                 <Label>Kode</Label>
                 <Input
                   value={kode}

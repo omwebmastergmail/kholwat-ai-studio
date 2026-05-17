@@ -22,11 +22,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/donasi")({
   head: () => ({
     meta: [
-      { title: "Konfirmasi Donasi — Kholwat MDTI 2026" },
+      { title: "Konfirmasi Iuran — Kholwat MDTI 2026" },
       {
         name: "description",
         content:
-          "Form konfirmasi donasi Kholwat MDTI 2026. Unggah bukti transfer untuk diverifikasi panitia.",
+          "Form konfirmasi iuran Kholwat MDTI 2026. Unggah bukti transfer untuk diverifikasi panitia.",
       },
     ],
   }),
@@ -44,9 +44,10 @@ function DonasiFormPage() {
   const navigate = useNavigate();
   const [sumber, setSumber] = useState<{ id: string; nama: string }[]>([]);
   const [donorNama, setDonorNama] = useState("");
+  const [donorGender, setDonorGender] = useState<"Pria" | "Wanita">("Pria");
   const [sumberId, setSumberId] = useState("");
-  const [nominal, setNominal] = useState<number>(0);
-  const [kolektif, setKolektif] = useState<{ nama: string; nominal: number }[]>([]);
+  const [nominal, setNominal] = useState<number>(250000);
+  const [kolektif, setKolektif] = useState<{ nama: string; gender: "Pria" | "Wanita"; nominal: number }[]>([]);
   const [keterangan, setKeterangan] = useState("");
   const kolektifSum = kolektif.reduce((s, r) => s + (Number(r.nominal) || 0), 0);
   const isKolektif = kolektif.length > 0;
@@ -111,14 +112,16 @@ function DonasiFormPage() {
 
       const kolektifText = isKolektif
         ? "Pembayar Kolektif:\n" +
-          kolektif.map((r) => `- ${r.nama.trim()} : ${formatRupiah(r.nominal)}`).join("\n")
+          kolektif.map((r) => `- ${r.nama.trim()} [${r.gender}] : ${formatRupiah(r.nominal)}`).join("\n")
         : "";
       const kode = "DN-" + Date.now().toString(36).toUpperCase();
+      const finalDonorName = isKolektif ? donorNama : `${parsed.data.donor_nama} [${donorGender}]`;
+
       const { error } = await supabase.from("transaksi").insert({
         tipe: "pemasukan",
         status: "pending",
         tanggal: new Date().toISOString().slice(0, 10),
-        donor_nama: parsed.data.donor_nama,
+        donor_nama: finalDonorName,
         sumber_donasi_id: parsed.data.sumber_donasi_id,
         nominal: parsed.data.nominal,
         keterangan:
@@ -127,7 +130,7 @@ function DonasiFormPage() {
         kode,
       });
       if (error) throw error;
-      toast.success("Konfirmasi donasi terkirim");
+      toast.success("Konfirmasi iuran terkirim");
       setDone({ kode });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mengirim");
@@ -147,8 +150,8 @@ function DonasiFormPage() {
             </div>
             <h1 className="mt-4 text-2xl font-bold">Terima Kasih!</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Konfirmasi donasi Anda telah kami terima dan akan diverifikasi panitia. Setelah
-              disetujui, donasi akan tampil pada Data Sumber Donasi.
+              Konfirmasi iuran Anda telah kami terima dan akan diverifikasi panitia. Setelah
+              disetujui, iuran akan tampil pada Data Cabang.
             </p>
             <div className="mt-4 rounded-lg bg-muted/60 p-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -162,7 +165,8 @@ function DonasiFormPage() {
                   setDone(null);
                   setDonorNama("");
                   setSumberId("");
-                  setNominal(0);
+                  setDonorGender("Pria");
+                  setNominal(250000);
                   setKolektif([]);
                   setKeterangan("");
                   setBukti(null);
@@ -215,22 +219,55 @@ function DonasiFormPage() {
 
         <form onSubmit={submit} className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm">
           <div>
-            <h1 className="text-xl font-bold">Konfirmasi Donasi</h1>
+            <h1 className="text-xl font-bold">Konfirmasi Iuran</h1>
             <p className="text-sm text-muted-foreground">
               Lengkapi form di bawah dan unggah bukti transfer.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="nama">Nama Pembayar *</Label>
-            <Input
-              id="nama"
-              required
-              maxLength={100}
-              value={donorNama}
-              onChange={(e) => setDonorNama(e.target.value)}
-              placeholder="Nama lengkap pembayar"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Cabang *</Label>
+              <Select value={sumberId} onValueChange={setSumberId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih cabang asal" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sumber.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nama}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nama">Nama Pembayar / Perwakilan *</Label>
+              <Input
+                id="nama"
+                required
+                maxLength={100}
+                value={donorNama}
+                onChange={(e) => setDonorNama(e.target.value)}
+                placeholder="Nama lengkap pembayar"
+              />
+            </div>
+            {!isKolektif && (
+              <div className="space-y-2">
+                <Label>Jenis Kelamin *</Label>
+                <div className="flex gap-4 items-center mt-1">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" checked={donorGender === "Pria"} onChange={() => { setDonorGender("Pria"); setNominal(250000); }} name="gender" className="h-4 w-4" />
+                    Pria
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" checked={donorGender === "Wanita"} onChange={() => { setDonorGender("Wanita"); setNominal(100000); }} name="gender" className="h-4 w-4" />
+                    Wanita
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -240,71 +277,82 @@ function DonasiFormPage() {
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => setKolektif((p) => [...p, { nama: "", nominal: 0 }])}
+                onClick={() => setKolektif((p) => [...p, { nama: "", gender: "Pria", nominal: 250000 }])}
               >
                 <Plus className="h-4 w-4" /> Tambah
               </Button>
             </div>
             {isKolektif ? (
-              <div className="overflow-hidden rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs">
-                    <tr>
-                      <th className="px-2 py-2 text-left font-medium">Nama</th>
-                      <th className="px-2 py-2 text-right font-medium w-40">Nominal</th>
-                      <th className="w-10" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {kolektif.map((row, idx) => (
-                      <tr key={idx} className="border-t">
-                        <td className="p-1.5">
-                          <Input
-                            value={row.nama}
-                            onChange={(e) =>
-                              setKolektif((p) =>
-                                p.map((r, i) => (i === idx ? { ...r, nama: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Nama"
-                            className="h-9"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <NominalInput
-                            value={row.nominal}
-                            onChange={(v) =>
-                              setKolektif((p) =>
-                                p.map((r, i) => (i === idx ? { ...r, nominal: v } : r)),
-                              )
-                            }
-                            placeholder="0"
-                            className="h-9 text-right"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setKolektif((p) => p.filter((_, i) => i !== idx))}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="border-t bg-muted/30">
-                      <td className="px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Total
-                      </td>
-                      <td className="px-2 py-2 text-right font-bold tabular-nums">
-                        {formatRupiah(kolektifSum)}
-                      </td>
-                      <td />
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="border border-border rounded-lg bg-card overflow-hidden">
+                <div className="hidden sm:grid grid-cols-12 gap-3 bg-muted/50 p-3 text-xs font-medium border-b text-muted-foreground">
+                  <div className="col-span-4 pl-2">Nama</div>
+                  <div className="col-span-3">Gender</div>
+                  <div className="col-span-4 text-right">Nominal</div>
+                  <div className="col-span-1"></div>
+                </div>
+                <div className="flex flex-col">
+                  {kolektif.map((row, idx) => (
+                    <div key={idx} className="relative grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 sm:py-2 flex-col sm:flex-row border-b sm:items-start group hover:bg-muted/30 transition-colors pt-8 sm:pt-3">
+                      <div className="absolute left-3 top-3 sm:hidden text-xs font-semibold text-muted-foreground">
+                        Pembayar {idx + 1}
+                      </div>
+                      <div className="sm:col-span-4">
+                        <Label className="text-xs sm:hidden mb-1.5 block">Nama Jamaah</Label>
+                        <Input
+                          value={row.nama}
+                          onChange={(e) =>
+                            setKolektif((p) =>
+                              p.map((r, i) => (i === idx ? { ...r, nama: e.target.value } : r)),
+                            )
+                          }
+                          placeholder="Nama Lengkap"
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <Label className="text-xs sm:hidden mb-1.5 block">Jenis Kelamin</Label>
+                        <div className="flex gap-4 sm:flex-col sm:gap-1.5 border border-input rounded-md px-3 sm:px-2 py-2 sm:py-1.5 items-center sm:items-start h-9 sm:h-auto overflow-hidden bg-background">
+                          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                            <input type="radio" checked={row.gender === "Pria"} onChange={() => setKolektif((p) => p.map((r, i) => (i === idx ? { ...r, gender: "Pria", nominal: 250000 } : r)))} name={`g_${idx}`} className="h-3.5 w-3.5" />
+                            Pria
+                          </label>
+                          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                            <input type="radio" checked={row.gender === "Wanita"} onChange={() => setKolektif((p) => p.map((r, i) => (i === idx ? { ...r, gender: "Wanita", nominal: 100000 } : r)))} name={`g_${idx}`} className="h-3.5 w-3.5" />
+                            Wanita
+                          </label>
+                        </div>
+                      </div>
+                      <div className="sm:col-span-4">
+                        <Label className="text-xs sm:hidden mb-1.5 block">Nominal Iuran</Label>
+                        <NominalInput
+                          value={row.nominal}
+                          onChange={(v) =>
+                            setKolektif((p) =>
+                              p.map((r, i) => (i === idx ? { ...r, nominal: v } : r)),
+                            )
+                          }
+                          placeholder="0"
+                          className="h-9 font-medium text-right"
+                        />
+                      </div>
+                      <div className="absolute right-2 top-2 sm:relative sm:top-0 sm:right-0 sm:col-span-1 flex items-center sm:justify-end">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setKolektif((p) => p.filter((_, i) => i !== idx))}
+                          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:mt-0.5"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="bg-muted/30 p-4 sm:p-3 flex justify-between items-center">
+                    <span className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Total Kolektif</span>
+                    <span className="font-bold text-lg text-primary tabular-nums">{formatRupiah(kolektifSum)}</span>
+                  </div>
+                </div>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
@@ -312,22 +360,6 @@ function DonasiFormPage() {
                 terisi ke Nominal.
               </p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Sumber Donasi dari Cabang *</Label>
-            <Select value={sumberId} onValueChange={setSumberId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih sumber donasi" />
-              </SelectTrigger>
-              <SelectContent>
-                {sumber.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">
@@ -391,10 +423,10 @@ function DonasiFormPage() {
           </div>
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Mengirim..." : "Kirim Konfirmasi Donasi"}
+            {submitting ? "Mengirim..." : "Kirim Konfirmasi Iuran"}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            Donasi akan tampil di Data Sumber Donasi setelah diverifikasi panitia.
+            Iuran akan tampil di Data Cabang setelah diverifikasi panitia.
           </p>
         </form>
       </main>
