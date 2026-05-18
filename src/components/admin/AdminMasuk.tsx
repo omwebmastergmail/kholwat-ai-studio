@@ -54,7 +54,7 @@ export function AdminMasuk({ sumber, seksi, trx, onChanged }: Props) {
     <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Donasi Masuk</h2>
+          <h2 className="text-lg font-semibold">Konfirmasi Donasi</h2>
           <p className="text-sm text-muted-foreground">
             Daftar donasi per donatur
             {pendingCount > 0 && (
@@ -78,7 +78,7 @@ export function AdminMasuk({ sumber, seksi, trx, onChanged }: Props) {
       <div className="grid grid-cols-1 gap-3 sm:hidden mb-4">
         {rows.length === 0 && (
           <div className="py-8 text-center text-sm text-muted-foreground border rounded-lg">
-            Belum ada donasi masuk
+            Belum ada donasi untuk dikonfirmasi
           </div>
         )}
         {rows.map((r) => {
@@ -317,7 +317,7 @@ export function AdminMasuk({ sumber, seksi, trx, onChanged }: Props) {
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  Belum ada donasi masuk
+                  Belum ada donasi untuk dikonfirmasi
                 </TableCell>
               </TableRow>
             )}

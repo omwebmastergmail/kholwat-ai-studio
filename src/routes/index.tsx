@@ -91,12 +91,14 @@ function Dashboard() {
     realisasi: trx
       .filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran")
       .reduce((sum, t) => sum + Number(t.nominal), 0),
-    transaksi: trx.filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran").map((t) => ({
-      id: t.id,
-      keterangan: t.keterangan || "",
-      tanggal: t.tanggal,
-      nominal: Number(t.nominal),
-    }))
+    transaksi: trx
+      .filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran")
+      .map((t) => ({
+        id: t.id,
+        keterangan: t.keterangan || "",
+        tanggal: t.tanggal,
+        nominal: Number(t.nominal),
+      })),
   }));
 
   const target = seksiRows.reduce((s, r) => s + r.rencana, 0);
@@ -162,7 +164,14 @@ function Dashboard() {
                 <TransaksiTab data={trxRows} />
               </TabsContent>
               <TabsContent value="grafik" className="mt-4">
-                <GrafikTab seksi={seksiRows} sumber={sumberRows} />
+                <GrafikTab
+                  seksi={seksiRows}
+                  sumber={sumberRows}
+                  target={target}
+                  realisasi={realisasi}
+                  pria={totalPria}
+                  wanita={totalWanita}
+                />
               </TabsContent>
             </Tabs>
 

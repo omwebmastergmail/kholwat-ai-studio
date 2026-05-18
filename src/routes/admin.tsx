@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, Inbox, List, PieChart as PieIcon, Users } from "lucide-react";
+import { ArrowLeftRight, Inbox, List, PieChart as PieIcon, Users, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { StatsCards } from "@/components/StatsCards";
@@ -12,6 +12,7 @@ import { AdminMasuk } from "@/components/admin/AdminMasuk";
 import { AdminTransaksi } from "@/components/admin/AdminTransaksi";
 import { AdminSeksi } from "@/components/admin/AdminSeksi";
 import { AdminGrafik } from "@/components/admin/AdminGrafik";
+import { AdminPeserta } from "@/components/admin/AdminPeserta";
 import type { Sumber, Seksi, Trx } from "@/lib/admin-types";
 
 export const Route = createFileRoute("/admin")({
@@ -100,44 +101,72 @@ function AdminPage() {
         <h1 className="text-2xl font-bold">Panel Admin</h1>
         <StatsCards target={target} realisasi={realisasi} />
 
-        <Tabs defaultValue="donasi" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="donasi">
-              <List className="mr-1 h-4 w-4" />
+        <Tabs defaultValue="donasi" className="flex w-full flex-col gap-6 md:flex-row">
+          <TabsList className="flex h-auto w-full shrink-0 justify-start overflow-x-auto rounded-lg md:w-56 md:flex-col md:items-stretch md:justify-start md:space-y-1 md:bg-transparent md:p-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <TabsTrigger
+              value="donasi"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <List className="mr-2 h-4 w-4 shrink-0" />
               Donasi
             </TabsTrigger>
-            <TabsTrigger value="seksi">
-              <Users className="mr-1 h-4 w-4" />
+            <TabsTrigger
+              value="seksi"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <Users className="mr-2 h-4 w-4 shrink-0" />
               Seksi
             </TabsTrigger>
-            <TabsTrigger value="transaksi">
-              <ArrowLeftRight className="mr-1 h-4 w-4" />
+            <TabsTrigger
+              value="transaksi"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <ArrowLeftRight className="mr-2 h-4 w-4 shrink-0" />
               Transaksi
             </TabsTrigger>
-            <TabsTrigger value="grafik">
-              <PieIcon className="mr-1 h-4 w-4" />
+            <TabsTrigger
+              value="peserta"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <UserRound className="mr-2 h-4 w-4 shrink-0" />
+              Peserta
+            </TabsTrigger>
+            <TabsTrigger
+              value="grafik"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <PieIcon className="mr-2 h-4 w-4 shrink-0" />
               Grafik
             </TabsTrigger>
-            <TabsTrigger value="masuk">
-              <Inbox className="mr-1 h-4 w-4" />
-              Masuk
+            <TabsTrigger
+              value="konfirmasi"
+              className="md:justify-start md:hover:bg-muted md:data-[state=active]:bg-primary/10 md:data-[state=active]:text-primary md:data-[state=active]:shadow-none"
+            >
+              <Inbox className="mr-2 h-4 w-4 shrink-0" />
+              Konfirmasi
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="donasi" className="mt-4">
-            <AdminDonasi sumber={sumber} trx={trx} onChanged={reload} />
-          </TabsContent>
-          <TabsContent value="seksi" className="mt-4">
-            <AdminSeksi seksi={seksi} trx={trx} masuk={realisasi} onChanged={reload} />
-          </TabsContent>
-          <TabsContent value="transaksi" className="mt-4">
-            <AdminTransaksi sumber={sumber} seksi={seksi} trx={trx} onChanged={reload} />
-          </TabsContent>
-          <TabsContent value="grafik" className="mt-4">
-            <AdminGrafik sumber={sumber} seksi={seksi} trx={trx} />
-          </TabsContent>
-          <TabsContent value="masuk" className="mt-4">
-            <AdminMasuk sumber={sumber} seksi={seksi} trx={trx} onChanged={reload} />
-          </TabsContent>
+
+          <div className="flex-1 overflow-hidden min-w-0">
+            <TabsContent value="donasi" className="mt-0">
+              <AdminDonasi sumber={sumber} trx={trx} onChanged={reload} />
+            </TabsContent>
+            <TabsContent value="seksi" className="mt-0">
+              <AdminSeksi seksi={seksi} trx={trx} masuk={realisasi} onChanged={reload} />
+            </TabsContent>
+            <TabsContent value="transaksi" className="mt-0">
+              <AdminTransaksi sumber={sumber} seksi={seksi} trx={trx} onChanged={reload} />
+            </TabsContent>
+            <TabsContent value="peserta" className="mt-0">
+              <AdminPeserta sumber={sumber} onChanged={reload} />
+            </TabsContent>
+            <TabsContent value="grafik" className="mt-0">
+              <AdminGrafik sumber={sumber} seksi={seksi} trx={trx} />
+            </TabsContent>
+            <TabsContent value="konfirmasi" className="mt-0">
+              <AdminMasuk sumber={sumber} seksi={seksi} trx={trx} onChanged={reload} />
+            </TabsContent>
+          </div>
         </Tabs>
       </main>
     </div>

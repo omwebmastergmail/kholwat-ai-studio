@@ -1,6 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,28 +29,57 @@ export interface SumberRow {
 
 export function DonasiTab({ data }: { data: SumberRow[] }) {
   const [q, setQ] = useState("");
-  const [sortDesc, setSortDesc] = useState<boolean | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    field: "nama" | "nominal" | "peserta" | null;
+    desc: boolean;
+  }>({
+    field: null,
+    desc: false,
+  });
   const [page, setPage] = useState(1);
-  const pageSize = 5;
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  const [pageSizeRaw, setPageSizeRaw] = useState<"10" | "15" | "25" | "all">("10");
 
   const filtered = useMemo(() => {
     let rows = data.filter((r) => r.nama.toLowerCase().includes(q.toLowerCase()));
-    if (sortDesc !== null) {
-      rows = [...rows].sort((a, b) => (sortDesc ? b.nominal - a.nominal : a.nominal - b.nominal));
+
+    if (sortConfig.field) {
+      rows = [...rows].sort((a, b) => {
+        let cmp = 0;
+        if (sortConfig.field === "nama") {
+          cmp = a.nama.localeCompare(b.nama);
+        } else if (sortConfig.field === "nominal") {
+          cmp = a.nominal - b.nominal;
+        } else if (sortConfig.field === "peserta") {
+          const aTotal = a.pria + a.wanita;
+          const bTotal = b.pria + b.wanita;
+          cmp = aTotal - bTotal;
+        }
+        return sortConfig.desc ? -cmp : cmp;
+      });
     } else {
       rows = [...rows].sort((a, b) => a.urutan - b.urutan);
     }
     return rows;
-  }, [data, q, sortDesc]);
+  }, [data, q, sortConfig]);
 
-  // Reset page when search or sort changes
-  useMemo(() => {
+  const pageSize = pageSizeRaw === "all" ? Math.max(1, filtered.length) : parseInt(pageSizeRaw, 10);
+
+  // Reset page when search, sort, or page size changes
+  useEffect(() => {
     setPage(1);
-  }, [q, sortDesc]);
+  }, [q, sortConfig, pageSizeRaw]);
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginatedMobile = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  const toggleSort = (field: "nama" | "nominal" | "peserta") => {
+    setSortConfig((current) => {
+      if (current.field === field) {
+        return { field, desc: !current.desc };
+      }
+      return { field, desc: false }; // Default true inside if descending preferred? let's stick to asc first unless nominal
+    });
+  };
 
   return (
     <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
@@ -63,13 +99,44 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
         </div>
       </div>
 
-      <div className="mb-4 sm:hidden">
+      <div className="mb-4 sm:hidden flex flex-wrap gap-2">
         <button
           className="inline-flex items-center gap-2 text-sm font-medium text-primary"
-          onClick={() => setSortDesc((s) => (s === null ? true : !s))}
+          onClick={() => toggleSort("nama")}
+        >
+          Urutkan Cabang <ArrowUpDown className="h-4 w-4" />
+        </button>
+        <button
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+          onClick={() => toggleSort("peserta")}
+        >
+          Urutkan Peserta <ArrowUpDown className="h-4 w-4" />
+        </button>
+        <button
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+          onClick={() => toggleSort("nominal")}
         >
           Urutkan Nominal <ArrowUpDown className="h-4 w-4" />
         </button>
+      </div>
+
+      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+        <span>Tampilkan</span>
+        <Select
+          value={pageSizeRaw}
+          onValueChange={(val: "10" | "15" | "25" | "all") => setPageSizeRaw(val)}
+        >
+          <SelectTrigger className="h-8 w-[80px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="15">15</SelectItem>
+            <SelectItem value="25">25</SelectItem>
+            <SelectItem value="all">Semua</SelectItem>
+          </SelectContent>
+        </Select>
+        <span>baris</span>
       </div>
 
       {/* Mobile view */}
@@ -113,14 +180,26 @@ export function DonasiTab({ data }: { data: SumberRow[] }) {
           <TableHeader>
             <TableRow className="bg-primary hover:bg-primary">
               <TableHead className="w-14 text-primary-foreground whitespace-nowrap">No</TableHead>
-              <TableHead className="text-primary-foreground whitespace-nowrap">Cabang</TableHead>
-              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
-                Peserta
+              <TableHead className="text-primary-foreground whitespace-nowrap">
+                <button
+                  className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  onClick={() => toggleSort("nama")}
+                >
+                  Cabang <ArrowUpDown className="h-3 w-3" />
+                </button>
               </TableHead>
               <TableHead className="text-right text-primary-foreground whitespace-nowrap">
                 <button
                   className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  onClick={() => setSortDesc((s) => (s === null ? true : !s))}
+                  onClick={() => toggleSort("peserta")}
+                >
+                  Peserta <ArrowUpDown className="h-3 w-3" />
+                </button>
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                <button
+                  className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  onClick={() => toggleSort("nominal")}
                 >
                   Nominal <ArrowUpDown className="h-3 w-3" />
                 </button>

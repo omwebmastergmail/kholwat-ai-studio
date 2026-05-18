@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { NominalInput } from "@/components/admin/NominalInput";
 import { toast } from "sonner";
+import { PesertaSelector } from "@/components/PesertaSelector";
 
 export const Route = createFileRoute("/donasi")({
   head: () => ({
@@ -40,6 +41,8 @@ const schema = z.object({
   keterangan: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
+type KolektifRow = { id?: string; nama: string; gender: "Pria" | "Wanita"; nominal: number };
+
 function DonasiFormPage() {
   const navigate = useNavigate();
   const [sumber, setSumber] = useState<{ id: string; nama: string }[]>([]);
@@ -47,9 +50,7 @@ function DonasiFormPage() {
   const [donorGender, setDonorGender] = useState<"Pria" | "Wanita">("Pria");
   const [sumberId, setSumberId] = useState("");
   const [nominal, setNominal] = useState<number>(250000);
-  const [kolektif, setKolektif] = useState<
-    { nama: string; gender: "Pria" | "Wanita"; nominal: number }[]
-  >([]);
+  const [kolektif, setKolektif] = useState<KolektifRow[]>([]);
   const [keterangan, setKeterangan] = useState("");
   const kolektifSum = kolektif.reduce((s, r) => s + (Number(r.nominal) || 0), 0);
   const isKolektif = kolektif.length > 0;
@@ -57,6 +58,9 @@ function DonasiFormPage() {
   const [bukti, setBukti] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ kode: string } | null>(null);
+  const [pesertaList, setPesertaList] = useState<
+    { id: string; nama: string; jenis_kelamin: string | null }[]
+  >([]);
 
   useEffect(() => {
     supabase
@@ -65,6 +69,71 @@ function DonasiFormPage() {
       .order("urutan")
       .then(({ data }) => setSumber(data ?? []));
   }, []);
+
+  useEffect(() => {
+    if (sumberId) {
+      supabase
+        .from("peserta")
+        .select("id, nama, jenis_kelamin")
+        .eq("sumber_donasi_id", sumberId)
+        .order("nama")
+        .then(({ data }) => {
+          setPesertaList(data ?? []);
+        });
+    } else {
+      setPesertaList([]);
+    }
+  }, [sumberId]);
+
+  const handleSelectPeserta = (ids: string[]) => {
+    // preserve current rows that are typed manually (no id)
+    const untyped = kolektif.filter((r) => !r.id && r.nama);
+    // update from selected ids
+    const newKolektif = ids.map((id) => {
+      const existing = kolektif.find((r) => r.id === id);
+      if (existing) return existing;
+      const p = pesertaList.find((x) => x.id === id);
+      return {
+        id,
+        nama: p?.nama || "",
+        gender: (p?.jenis_kelamin === "wanita" ? "Wanita" : "Pria") as "Pria" | "Wanita",
+        nominal: p?.jenis_kelamin === "wanita" ? 100000 : 250000,
+      };
+    });
+    setKolektif([...untyped, ...newKolektif]);
+  };
+
+  const handleAddNewPeserta = async (nama: string, jk: string) => {
+    if (!sumberId) {
+      toast.error("Pilih Cabang terlebih dahulu!");
+      return;
+    }
+    // create temp or save? Let's save it so it gets an ID instantly
+    const { data, error } = await supabase
+      .from("peserta")
+      .insert({
+        nama,
+        jenis_kelamin: jk,
+        sumber_donasi_id: sumberId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Gagal menambahkan peserta");
+    } else if (data) {
+      setPesertaList((prev) => [...prev, data]);
+      setKolektif((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          nama: data.nama,
+          gender: (data.jenis_kelamin === "wanita" ? "Wanita" : "Pria") as "Pria" | "Wanita",
+          nominal: data.jenis_kelamin === "wanita" ? 100000 : 250000,
+        },
+      ]);
+    }
+  };
 
   const onFile = (f: File | null) => {
     if (!f) return setBukti(null);
@@ -121,19 +190,37 @@ function DonasiFormPage() {
       const kode = "DN-" + Date.now().toString(36).toUpperCase();
       const finalDonorName = isKolektif ? donorNama : `${parsed.data.donor_nama} [${donorGender}]`;
 
-      const { error } = await supabase.from("transaksi").insert({
-        tipe: "pemasukan",
-        status: "pending",
-        tanggal: new Date().toISOString().slice(0, 10),
-        donor_nama: finalDonorName,
-        sumber_donasi_id: parsed.data.sumber_donasi_id,
-        nominal: parsed.data.nominal,
-        keterangan:
-          [kolektifText, parsed.data.keterangan || ""].filter(Boolean).join("\n\n") || null,
-        bukti_bayar_url: pub.publicUrl,
-        kode,
-      });
+      const { data: trxRow, error } = await supabase
+        .from("transaksi")
+        .insert({
+          tipe: "pemasukan",
+          status: "pending",
+          tanggal: new Date().toISOString().slice(0, 10),
+          donor_nama: finalDonorName,
+          sumber_donasi_id: parsed.data.sumber_donasi_id,
+          nominal: parsed.data.nominal,
+          keterangan:
+            [kolektifText, parsed.data.keterangan || ""].filter(Boolean).join("\n\n") || null,
+          bukti_bayar_url: pub.publicUrl,
+          kode,
+        })
+        .select("id")
+        .single();
+
       if (error) throw error;
+
+      if (isKolektif) {
+        const tPeserta = kolektif
+          .filter((k) => k.id)
+          .map((k) => ({
+            transaksi_id: trxRow.id,
+            peserta_id: k.id!,
+          }));
+        if (tPeserta.length > 0) {
+          await supabase.from("transaksi_peserta").insert(tPeserta);
+        }
+      }
+
       toast.success("Konfirmasi iuran terkirim");
       setDone({ kode });
     } catch (err) {
@@ -293,18 +380,32 @@ function DonasiFormPage() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label>Nama Pembayar Kolektif</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  setKolektif((p) => [...p, { nama: "", gender: "Pria", nominal: 250000 }])
-                }
-              >
-                <Plus className="h-4 w-4" /> Tambah
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <Label>Nama Pembayar Kolektif</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Pembayaran lebih dari 1 orang dalam 1 transfer.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <PesertaSelector
+                  pesertaList={pesertaList}
+                  selectedIds={kolektif.map((k) => k.id!).filter(Boolean)}
+                  onSelect={handleSelectPeserta}
+                  onAddNew={handleAddNewPeserta}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setKolektif((p) => [...p, { nama: "", gender: "Pria", nominal: 250000 }])
+                  }
+                >
+                  <Plus className="h-4 w-4 shrink-0" />{" "}
+                  <span className="hidden sm:inline ml-1">Manual</span>
+                </Button>
+              </div>
             </div>
             {isKolektif ? (
               <div className="border border-border rounded-lg bg-card overflow-hidden">

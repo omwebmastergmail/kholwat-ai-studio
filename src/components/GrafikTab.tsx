@@ -28,7 +28,21 @@ const COLORS = [
   "#256e4d",
 ];
 
-export function GrafikTab({ seksi, sumber }: { seksi: SeksiRow[]; sumber: SumberRow[] }) {
+export function GrafikTab({
+  seksi,
+  sumber,
+  target,
+  realisasi,
+  pria,
+  wanita,
+}: {
+  seksi: SeksiRow[];
+  sumber: SumberRow[];
+  target: number;
+  realisasi: number;
+  pria: number;
+  wanita: number;
+}) {
   const seksiData = seksi.map((s) => ({
     name: s.nama,
     Rencana: s.rencana,
@@ -37,6 +51,16 @@ export function GrafikTab({ seksi, sumber }: { seksi: SeksiRow[]; sumber: Sumber
   const sumberData = sumber
     .filter((s) => s.nominal > 0)
     .map((s) => ({ name: s.nama, value: s.nominal }));
+
+  const targetData = [
+    { name: "Tercapai", value: realisasi },
+    { name: "Kekurangan", value: Math.max(target - realisasi, 0) },
+  ];
+
+  const genderData = [
+    { name: "Pria", value: pria },
+    { name: "Wanita", value: wanita },
+  ];
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -115,6 +139,65 @@ export function GrafikTab({ seksi, sumber }: { seksi: SeksiRow[]; sumber: Sumber
               </PieChart>
             </ResponsiveContainer>
           )}
+        </div>
+      </div>
+      <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-6 overflow-hidden">
+        <h2 className="mb-1 text-lg font-semibold">Target vs Realisasi</h2>
+        <p className="mb-4 text-sm text-muted-foreground">Pencapaian donasi iuran</p>
+        <div className="h-80 w-full md:h-96 relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <Pie
+                data={targetData}
+                dataKey="value"
+                nameKey="name"
+                innerRadius="60%"
+                outerRadius="80%"
+                paddingAngle={2}
+              >
+                <Cell fill="var(--color-primary)" />
+                <Cell fill="#e2e8f0" />
+              </Pie>
+              <Tooltip formatter={(v: number) => formatRupiah(v)} wrapperClassName="text-sm" />
+              <Legend verticalAlign="bottom" />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-8">
+            <span className="text-3xl font-bold text-primary">
+              {target > 0 ? Math.round((realisasi / target) * 100) : 0}%
+            </span>
+            <span className="text-xs text-muted-foreground">Tercapai</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-6 overflow-hidden">
+        <h2 className="mb-1 text-lg font-semibold">Komposisi Peserta</h2>
+        <p className="mb-4 text-sm text-muted-foreground">Persentase Pria dan Wanita</p>
+        <div className="h-80 w-full md:h-96 relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <Pie
+                data={genderData}
+                dataKey="value"
+                nameKey="name"
+                innerRadius="60%"
+                outerRadius="80%"
+                paddingAngle={2}
+              >
+                <Cell fill="var(--color-primary)" />
+                <Cell fill="#f97316" />
+              </Pie>
+              <Tooltip formatter={(v: number) => `${v} Orang`} wrapperClassName="text-sm" />
+              <Legend verticalAlign="bottom" />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-8">
+            <span className="text-3xl font-bold text-foreground">
+              {pria + wanita > 0 ? pria + wanita : 0}
+            </span>
+            <span className="text-xs text-muted-foreground">Total Peserta</span>
+          </div>
         </div>
       </div>
     </div>

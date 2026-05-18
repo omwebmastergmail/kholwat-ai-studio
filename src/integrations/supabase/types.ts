@@ -8,6 +8,41 @@ export type Database = {
   };
   public: {
     Tables: {
+      peserta: {
+        Row: {
+          created_at: string;
+          id: string;
+          nama: string;
+          jenis_kelamin: string | null;
+          sumber_donasi_id: string | null;
+          no_wa: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          nama: string;
+          jenis_kelamin?: string | null;
+          sumber_donasi_id?: string | null;
+          no_wa?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          nama?: string;
+          jenis_kelamin?: string | null;
+          sumber_donasi_id?: string | null;
+          no_wa?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "peserta_sumber_donasi_id_fkey";
+            columns: ["sumber_donasi_id"];
+            isOneToOne: false;
+            referencedRelation: "sumber_donasi";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       seksi: {
         Row: {
           created_at: string;
@@ -109,6 +144,36 @@ export type Database = {
             columns: ["sumber_donasi_id"];
             isOneToOne: false;
             referencedRelation: "sumber_donasi";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      transaksi_peserta: {
+        Row: {
+          peserta_id: string;
+          transaksi_id: string;
+        };
+        Insert: {
+          peserta_id: string;
+          transaksi_id: string;
+        };
+        Update: {
+          peserta_id?: string;
+          transaksi_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "transaksi_peserta_peserta_id_fkey";
+            columns: ["peserta_id"];
+            isOneToOne: false;
+            referencedRelation: "peserta";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transaksi_peserta_transaksi_id_fkey";
+            columns: ["transaksi_id"];
+            isOneToOne: false;
+            referencedRelation: "transaksi";
             referencedColumns: ["id"];
           },
         ];

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Plus, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -50,9 +52,13 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
               </div>
               <Badge
                 variant={r.tipe === "pemasukan" ? "default" : "secondary"}
-                className="shrink-0"
+                className={cn(
+                  "shrink-0",
+                  r.tipe === "pengeluaran" &&
+                    "bg-red-500 text-white border-transparent hover:bg-red-600",
+                )}
               >
-                {r.tipe}
+                {r.tipe === "pemasukan" ? "MASUK" : "KELUAR"}
               </Badge>
             </div>
 
@@ -64,7 +70,19 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
 
             <div className="flex justify-between items-center pt-2 border-t mt-1">
               <span className="text-xs font-medium text-muted-foreground">Nominal</span>
-              <span className="font-bold text-primary">{formatRupiah(r.nominal)}</span>
+              <span
+                className={cn(
+                  "font-bold flex items-center gap-1",
+                  r.tipe === "pemasukan" ? "text-primary" : "text-red-500",
+                )}
+              >
+                {r.tipe === "pemasukan" ? (
+                  <Plus className="h-3.5 w-3.5" />
+                ) : (
+                  <Minus className="h-3.5 w-3.5" />
+                )}
+                {formatRupiah(r.nominal)}
+              </span>
             </div>
           </div>
         ))}
@@ -100,9 +118,13 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
                 <TableCell>
                   <Badge
                     variant={r.tipe === "pemasukan" ? "default" : "secondary"}
-                    className="whitespace-nowrap"
+                    className={cn(
+                      "whitespace-nowrap",
+                      r.tipe === "pengeluaran" &&
+                        "bg-red-500 text-white border-transparent hover:bg-red-600",
+                    )}
                   >
-                    {r.tipe}
+                    {r.tipe === "pemasukan" ? "MASUK" : "KELUAR"}
                   </Badge>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -112,7 +134,19 @@ export function TransaksiTab({ data }: { data: TrxRow[] }) {
                   {r.keterangan ?? "-"}
                 </TableCell>
                 <TableCell className="text-right tabular-nums whitespace-nowrap">
-                  {formatRupiah(r.nominal)}
+                  <div
+                    className={cn(
+                      "flex items-center justify-end font-medium gap-1",
+                      r.tipe === "pemasukan" ? "text-primary" : "text-red-500",
+                    )}
+                  >
+                    {r.tipe === "pemasukan" ? (
+                      <Plus className="h-3.5 w-3.5" />
+                    ) : (
+                      <Minus className="h-3.5 w-3.5" />
+                    )}
+                    {formatRupiah(r.nominal)}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
