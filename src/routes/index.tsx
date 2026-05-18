@@ -38,7 +38,7 @@ async function fetchAll() {
     supabase
       .from("transaksi")
       .select(
-        "id, tanggal, tipe, nominal, keterangan, sumber_donasi_id, seksi_id, status, sumber_donasi(nama), seksi(nama)",
+        "id, tanggal, tipe, nominal, keterangan, donor_nama, sumber_donasi_id, seksi_id, status, sumber_donasi(nama), seksi(nama)",
       )
       .order("tanggal", { ascending: false }),
   ]);
@@ -91,6 +91,12 @@ function Dashboard() {
     realisasi: trx
       .filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran")
       .reduce((sum, t) => sum + Number(t.nominal), 0),
+    transaksi: trx.filter((t) => t.seksi_id === s.id && t.tipe === "pengeluaran").map((t) => ({
+      id: t.id,
+      keterangan: t.keterangan || "",
+      tanggal: t.tanggal,
+      nominal: Number(t.nominal),
+    }))
   }));
 
   const target = seksiRows.reduce((s, r) => s + r.rencana, 0);

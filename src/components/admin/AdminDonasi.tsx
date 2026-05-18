@@ -176,8 +176,60 @@ export function AdminDonasi({ sumber, trx, onChanged }: Props) {
         />
       </div>
 
-      <div className="overflow-hidden rounded-xl border">
-        <Table>
+      <div className="grid grid-cols-1 gap-3 sm:hidden mb-4">
+        {visible.map((r, i) => (
+          <div
+            key={r.id}
+            className="rounded-lg border bg-background p-4 shadow-sm flex flex-col gap-3"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                {i + 1}
+              </div>
+              <div className="flex-1 font-medium">{r.nama}</div>
+            </div>
+            <div className="flex justify-between items-center bg-muted/30 p-2 rounded-md">
+              <span className="text-xs text-muted-foreground">Nominal</span>
+              <span className="font-semibold tabular-nums">{formatRupiah(r.nominal)}</span>
+            </div>
+            <div className="flex gap-2 justify-end border-t pt-3 mt-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-emerald-600 h-8 gap-1"
+                onClick={() => {
+                  setEdit(r);
+                  setOpen(true);
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 h-8 gap-1"
+                onClick={() => del(r.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Hapus
+              </Button>
+            </div>
+          </div>
+        ))}
+        {rows.length > 15 && !showAll && (
+          <div className="text-center py-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowAll(true)}>
+              Tampilkan lagi ({rows.length - 15} sisa)
+            </Button>
+          </div>
+        )}
+        <div className="rounded-lg border bg-primary/10 p-4 shadow-sm flex justify-between items-center">
+          <span className="font-semibold">Total</span>
+          <span className="font-bold tabular-nums text-primary">{formatRupiah(total)}</span>
+        </div>
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto rounded-xl border">
+        <Table className="min-w-[500px]">
           <TableHeader>
             <TableRow className="bg-primary hover:bg-primary">
               <TableHead className="w-14 text-primary-foreground">No</TableHead>

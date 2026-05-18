@@ -1,6 +1,7 @@
 import { Fragment as FragmentRow, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { NominalInput } from "@/components/admin/NominalInput";
 import { Label } from "@/components/ui/label";
@@ -157,16 +158,147 @@ export function AdminSeksi({ seksi, trx, masuk, onChanged }: Props) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border">
-        <Table>
+      <div className="grid grid-cols-1 gap-3 sm:hidden">
+        {rows.length === 0 && (
+          <div className="py-8 text-center text-sm text-muted-foreground border rounded-lg">
+            Belum ada seksi. Klik "Tambah Seksi" untuk memulai.
+          </div>
+        )}
+        {rows.map((r, i) => {
+          const pct = r.rencana_anggaran > 0 ? (r.realisasi / Number(r.rencana_anggaran)) * 100 : 0;
+          const pctColor =
+            pct > 100 ? "text-red-600" : pct >= 80 ? "text-amber-600" : "text-emerald-600";
+          const barColor = pct > 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500";
+          const selisih = r.realisasi - Number(r.rencana_anggaran);
+          const isOpen = expanded === r.id;
+          const detail = trx
+            .filter((t) => t.seksi_id === r.id && t.tipe === "pengeluaran")
+            .sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+
+          return (
+            <div key={r.id} className="rounded-lg border bg-background p-4 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                  {i + 1}
+                </div>
+                <div className="flex-1">
+                  <button
+                    className="flex w-full items-center gap-1 font-medium text-left"
+                    onClick={() => setExpanded(isOpen ? null : r.id)}
+                  >
+                    {r.nama}{" "}
+                    {isOpen ? (
+                      <ChevronUp className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <Progress value={pct} className={cn("h-1.5 mb-4", barColor)} />
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-0.5">Anggaran</p>
+                  <p className="font-medium tabular-nums">{formatRupiah(r.rencana_anggaran)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground text-xs mb-0.5">Realisasi</p>
+                  <p className="font-medium tabular-nums text-primary">
+                    {formatRupiah(r.realisasi)}
+                  </p>
+                </div>
+                <div className="col-span-2 mt-1">
+                  <div className="flex justify-between items-center rounded-md bg-muted/50 px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Persentase</span>
+                    <span className={cn("font-semibold tabular-nums", pctColor)}>
+                      {r.rencana_anggaran > 0 ? `${Math.round(pct)}%` : "-"}
+                    </span>
+                  </div>
+                </div>
+                {selisih !== 0 && (
+                  <div className="col-span-2 flex justify-between items-center px-3 py-1">
+                    <span className="text-xs text-muted-foreground">Sisa/Kurang</span>
+                    <span
+                      className={cn(
+                        "font-medium tabular-nums text-xs",
+                        selisih > 0 ? "text-red-600" : "text-emerald-600",
+                      )}
+                    >
+                      {selisih > 0 ? "+" : ""}
+                      {formatRupiah(selisih)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 flex gap-2 justify-end border-t pt-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-emerald-600 h-8 gap-1"
+                  onClick={() => openEdit(r)}
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-600 h-8 gap-1"
+                  onClick={() => setDel(r)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Hapus
+                </Button>
+              </div>
+              {isOpen && (
+                <div className="mt-3 border-t pt-3 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">DETAIL PENGELUARAN</p>
+                  {detail.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Belum ada pengeluaran.</p>
+                  ) : (
+                    detail.map((d) => (
+                      <div
+                        key={d.id}
+                        className="flex justify-between items-start gap-2 border-b pb-2 last:border-0 last:pb-0"
+                      >
+                        <div>
+                          <p className="text-xs font-medium">{d.keterangan || "-"}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {formatTanggal(d.tanggal)}
+                          </p>
+                        </div>
+                        <p className="text-xs text-red-600 tabular-nums font-medium whitespace-nowrap">
+                          -{formatRupiah(d.nominal)}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop view */}
+      <div className="hidden sm:block overflow-x-auto rounded-xl border">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="bg-primary hover:bg-primary">
-              <TableHead className="w-12 text-primary-foreground">No</TableHead>
-              <TableHead className="text-primary-foreground">Nama Seksi</TableHead>
-              <TableHead className="text-right text-primary-foreground">Anggaran</TableHead>
-              <TableHead className="text-right text-primary-foreground">Realisasi</TableHead>
-              <TableHead className="w-20 text-right text-primary-foreground">%</TableHead>
-              <TableHead className="w-24 text-right text-primary-foreground">Aksi</TableHead>
+              <TableHead className="w-12 text-primary-foreground whitespace-nowrap">No</TableHead>
+              <TableHead className="text-primary-foreground whitespace-nowrap">
+                Nama Seksi
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Anggaran
+              </TableHead>
+              <TableHead className="text-right text-primary-foreground whitespace-nowrap">
+                Realisasi
+              </TableHead>
+              <TableHead className="w-20 text-right text-primary-foreground whitespace-nowrap">
+                %
+              </TableHead>
+              <TableHead className="w-24 text-right text-primary-foreground whitespace-nowrap">
+                Aksi
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

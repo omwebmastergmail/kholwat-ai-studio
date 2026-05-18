@@ -75,8 +75,117 @@ export function AdminMasuk({ sumber, seksi, trx, onChanged }: Props) {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border">
-        <Table>
+      <div className="grid grid-cols-1 gap-3 sm:hidden mb-4">
+        {rows.length === 0 && (
+          <div className="py-8 text-center text-sm text-muted-foreground border rounded-lg">
+            Belum ada donasi masuk
+          </div>
+        )}
+        {rows.map((r) => {
+          const isOpen = expanded === r.id;
+          const sumberNama = sumber.find((s) => s.id === r.sumber_donasi_id)?.nama;
+          return (
+            <div
+              key={r.id}
+              className="rounded-lg border bg-background p-4 shadow-sm flex flex-col gap-3"
+            >
+              <div
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setExpanded(isOpen ? null : r.id)}
+              >
+                <div>
+                  <div className="font-semibold text-sm mb-1">{r.donor_nama ?? "-"}</div>
+                  <div className="text-xs text-muted-foreground">{formatTanggal(r.tanggal)}</div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="font-bold tabular-nums text-emerald-600">
+                    {formatRupiah(r.nominal)}
+                  </div>
+                  <StatusBadge status={r.status} />
+                </div>
+              </div>
+
+              {isOpen && (
+                <div className="mt-3 border-t pt-3 flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="block text-xs text-muted-foreground mb-0.5">Kode:</span>
+                      <span className="font-medium">{r.kode ?? "-"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-muted-foreground mb-0.5">Sumber:</span>
+                      <span className="font-medium">{sumberNama ?? "-"}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="block text-xs text-muted-foreground mb-0.5">
+                        Keterangan:
+                      </span>
+                      <span className="font-medium">{r.keterangan ?? "-"}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Bukti Bayar:</div>
+                    {r.bukti_bayar_url ? (
+                      <a href={r.bukti_bayar_url} target="_blank" rel="noreferrer">
+                        <img
+                          src={r.bukti_bayar_url}
+                          alt="bukti"
+                          className="h-24 w-24 rounded border object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded border text-xs text-muted-foreground">
+                        Tidak ada
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEdit(r);
+                        setOpen(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    {r.status === "pending" && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStatus(r.id, "diterima");
+                          }}
+                        >
+                          <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Verifikasi
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStatus(r.id, "ditolak");
+                          }}
+                        >
+                          <XCircle className="mr-1 h-3.5 w-3.5" /> Tolak
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto rounded-xl border">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead>Tanggal</TableHead>
